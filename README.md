@@ -37,14 +37,14 @@ pip install -r requirements.txt
 # 1) 创建隔离环境并安装最小依赖
 mamba create -n twinuav python=3.10 -y
 pip install torch==2.4.0 torchvision==0.19.0 --index-url https://download.pytorch.org/whl/cu118
-pip install genesis-world==0.2.1 mujoco transformers==4.51.3 gdown setuptools==59.5 libigl==2.5.1
+pip install genesis-world==0.2.1 mujoco transformers==4.51.3 gdown setuptools==59.5 libigl==2.5.1 pyglet
 pip install gsplat==0.1.11
 
 export PATH=/usr/local/cuda-11.8/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda-11.8/lib64:$LD_LIBRARY_PATH
 export CUDA_HOME=/usr/local/cuda-11.8
 (twinuav) dell@dell-Precision-3680 [~/twinmanip] git:(master) ✗ ➜  pip install -r simulation/requirements.txt --verbose
-
+mamba install -n twinuav -c conda-forge "libstdcxx-ng>=13" "libgcc-ng>=13"
 mamba run -n twinuav python -m pip install -r requirements.txt
 
 # 2) 运行测试（无需 Genesis）
@@ -62,3 +62,7 @@ ROS_NAMESPACE=/ mamba run -n twinuav python -m twinuav.ros1_playback \
 说明：
 - 若未安装 `genesis` 或缺少 `assets/3dgs/*.ply`，demo 将退化为黑屏渲染/空占据栅格，但流程可跑通。
 - `sam_segment.py` 提供可选的 Segment-Anything 推理器包装，若未安装其依赖将自动回退为 no-op。
+
+nv -u LD_LIBRARY_PATH LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia PYOPENGL_PLATFORM=glx /home/dell/.local/share/mamba/envs/twinuav/bin/python /home/dell/twinUAV/src/twinuav/run_circle.py --config /home/dell/twinUAV/configs/demo_default.yaml | cat
+
+__NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia python /home/dell/twinUAV/src/twinuav/run_circle.py --config /home/dell/twinUAV/configs/demo_default.yaml

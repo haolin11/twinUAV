@@ -8,8 +8,8 @@ try:
 except ModuleNotFoundError as e:
     gs = None
 
-from .stereo_rig import StereoRig
-from .utils import quat_wxyz_to_R, yaw_to_quat_wxyz
+from stereo_rig import StereoRig
+from utils import quat_wxyz_to_R, yaw_to_quat_wxyz
 
 
 class GenesisSim:

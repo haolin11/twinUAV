@@ -1,6 +1,6 @@
 urdf: builtin:genesis_quadrotor
 base_link: base_link
-viewer: false
+viewer: true
 steps: 2400
 step_dt: 0.0041667  # 1/240
 stereo:

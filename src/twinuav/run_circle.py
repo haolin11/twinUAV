@@ -5,10 +5,10 @@ import math
 import numpy as np
 import yaml
 
-from .stereo_rig import StereoRig
-from .renderer_3dgs import Stereo3DGSRenderer
-from .genesis_sim import GenesisSim
-from .utils import quat_wxyz_to_R, yaw_to_quat_wxyz
+from stereo_rig import StereoRig
+from renderer_3dgs import Stereo3DGSRenderer
+from genesis_sim import GenesisSim
+from utils import quat_wxyz_to_R, yaw_to_quat_wxyz
 
 
 def main():

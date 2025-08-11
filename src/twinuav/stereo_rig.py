@@ -1,8 +1,8 @@
 from __future__ import annotations
 from dataclasses import dataclass
 import numpy as np
-from .utils import fov_v_to_K
-from .calib_io import load_camera_yaml
+from utils import fov_v_to_K
+from calib_io import load_camera_yaml
 
 @dataclass
 class StereoRig:
