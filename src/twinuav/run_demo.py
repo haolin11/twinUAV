@@ -25,7 +25,14 @@ def main():
     # Genesis + UAV
     urdf = cfg['urdf']; base_link = cfg.get('base_link','base_link')
     viewer = bool(cfg.get('viewer', args.viewer))
-    sim = GenesisSim(urdf=urdf, base_link=base_link, viewer=viewer)
+    try:
+        sim = GenesisSim(urdf=urdf, base_link=base_link, viewer=viewer)
+    except Exception as e:
+        if viewer:
+            print(f"[Warn] 可视化窗口初始化失败，自动切换为无窗口模式（headless）：{e}")
+            sim = GenesisSim(urdf=urdf, base_link=base_link, viewer=False)
+        else:
+            raise
 
     # Objects
     obj_cfg = cfg.get('objects',{}).get('table', None)

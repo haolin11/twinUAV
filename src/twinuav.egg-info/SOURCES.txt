@@ -6,12 +6,16 @@ src/twinuav/calib_io.py
 src/twinuav/control.py
 src/twinuav/genesis_sim.py
 src/twinuav/imu_sim.py
+src/twinuav/offline_detect_objects.py
 src/twinuav/planner3d.py
 src/twinuav/renderer_3dgs.py
 src/twinuav/ros1_playback.py
+src/twinuav/ros1_stream_sim.py
 src/twinuav/ros1_vins_bridge.py
 src/twinuav/rules.py
+src/twinuav/run_circle.py
 src/twinuav/run_demo.py
+src/twinuav/sam_segment.py
 src/twinuav/stereo_rig.py
 src/twinuav/utils.py
 src/twinuav/voxel_map3d.py

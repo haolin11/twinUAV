@@ -27,7 +27,16 @@ def main():
     try:
         sim = GenesisSim(urdf=urdf, base_link=base_link, viewer=viewer)
     except Exception as e:
-        print(f"[Warn] Genesis 不可用，使用无 Genesis 回退渲染：{e}")
+        if viewer:
+            print(f"[Warn] 可视化窗口初始化失败，自动切换为无窗口模式（headless）：{e}")
+            try:
+                sim = GenesisSim(urdf=urdf, base_link=base_link, viewer=False)
+            except Exception as ee:
+                print(f"[Warn] Genesis 不可用，使用无 Genesis 回退渲染：{ee}")
+                sim = None
+        else:
+            print(f"[Warn] Genesis 不可用，使用无 Genesis 回退渲染：{e}")
+            sim = None
 
     # Stereo rig
     s = cfg['stereo']
@@ -36,7 +45,19 @@ def main():
     rig.cam1_yaml = s.get('cam1_yaml', None)
     _ = rig.load_from_yaml()
     if sim is not None:
-        sim.attach_stereo(rig)
+        try:
+            sim.attach_stereo(rig)
+        except Exception as e:
+            if viewer:
+                print(f"[Warn] 构建可视化失败，自动重建为无窗口模式（headless）：{e}")
+                try:
+                    sim = GenesisSim(urdf=urdf, base_link=base_link, viewer=False)
+                    sim.attach_stereo(rig)
+                except Exception as ee:
+                    print(f"[Warn] 无法启用 Genesis 场景，将继续以无 Genesis 路径渲染：{ee}")
+                    sim = None
+            else:
+                print(f"[Warn] 无法附加相机/构建场景：{e}")
 
     # Renderer (支持 external 后端)
     rcfg = cfg['renderer']

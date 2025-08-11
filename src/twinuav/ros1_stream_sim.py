@@ -43,7 +43,14 @@ class RosStreamSim:
         # Genesis + UAV
         urdf = sim_cfg['urdf']; base_link = sim_cfg.get('base_link','base_link')
         viewer = bool(sim_cfg.get('viewer', False))
-        self.sim = GenesisSim(urdf=urdf, base_link=base_link, viewer=viewer)
+        try:
+            self.sim = GenesisSim(urdf=urdf, base_link=base_link, viewer=viewer)
+        except Exception as e:
+            if viewer:
+                print(f"[Warn] 可视化窗口初始化失败，自动切换为无窗口模式（headless）：{e}")
+                self.sim = GenesisSim(urdf=urdf, base_link=base_link, viewer=False)
+            else:
+                raise
 
         # Objects
         obj_cfg = sim_cfg.get('objects',{}).get('table', None)

@@ -37,7 +37,14 @@ pip install -r requirements.txt
 # 1) 创建隔离环境并安装最小依赖
 mamba create -n twinuav python=3.10 -y
 pip install torch==2.4.0 torchvision==0.19.0 --index-url https://download.pytorch.org/whl/cu118
-pip install gsplat
+pip install genesis-world==0.2.1 mujoco transformers==4.51.3 gdown setuptools==59.5 libigl==2.5.1
+pip install gsplat==0.1.11
+
+export PATH=/usr/local/cuda-11.8/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/cuda-11.8/lib64:$LD_LIBRARY_PATH
+export CUDA_HOME=/usr/local/cuda-11.8
+(twinuav) dell@dell-Precision-3680 [~/twinmanip] git:(master) ✗ ➜  pip install -r simulation/requirements.txt --verbose
+
 mamba run -n twinuav python -m pip install -r requirements.txt
 
 # 2) 运行测试（无需 Genesis）

@@ -56,8 +56,15 @@ class Stereo3DGSRenderer:
                 import torch  # type: ignore
                 self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
                 gaussian = construct_from_ply(self.model_path, device=torch.device(self.device))
+                # 兼容 fast_gaussian_model_manager.GaussianModel 与渲染器预期的属性名
+                if not hasattr(gaussian, 'active_sh_degree') and hasattr(gaussian, 'sh_degrees'):
+                    try:
+                        setattr(gaussian, 'active_sh_degree', int(getattr(gaussian, 'sh_degrees')))
+                    except Exception:
+                        setattr(gaussian, 'active_sh_degree', 3)
                 renderer = GSPlatRenderer()
-                background = torch.tensor((0.0, 0.0, 0.0), dtype=torch.float32, device=self.device)
+                # external 的背景默认设为白色以便快速发现渲染为全黑的问题来源
+                background = torch.tensor((1.0, 1.0, 1.0), dtype=torch.float32, device=self.device)
                 self._ext_handles = {
                     'renderer': renderer,
                     'gaussian': gaussian,
@@ -127,11 +134,11 @@ class Stereo3DGSRenderer:
             bg = self._ext_handles['background']
             W, H = int(res[0]), int(res[1])
             fx, fy, cx, cy = float(K[0, 0]), float(K[1, 1]), float(K[0, 2]), float(K[1, 2])
-            # 世界到相机
-            Rwc = T_wc_backend[:3, :3]
-            Twc = T_wc_backend[:3, 3]
-            R = torch.as_tensor(Rwc, dtype=torch.float32).unsqueeze(0)
-            T = torch.as_tensor(Twc, dtype=torch.float32).unsqueeze(0)
+            # external Cameras 期望世界到相机 (w2c)。直接传入即可。
+            R_w2c = T_wc_backend[:3, :3]
+            t_w2c = T_wc_backend[:3, 3]
+            R = torch.as_tensor(R_w2c, dtype=torch.float32).unsqueeze(0)
+            T = torch.as_tensor(t_w2c, dtype=torch.float32).unsqueeze(0)
             cam = Cameras(
                 R=R,
                 T=T,
@@ -148,7 +155,15 @@ class Stereo3DGSRenderer:
             )[0].to_device(torch.device(self.device))
             with torch.no_grad():
                 outputs = renderer.render(cam, gaussian, bg, scaling_modifier=1.0, render_types=["rgb", "depth"] if need_depth else ["rgb"])  # type: ignore
-                rgb = outputs["render"].permute(1, 2, 0).detach().cpu().numpy()
+                # 兼容不同 field 名称
+                rgb_key = "rgb" if "rgb" in outputs else ("render" if "render" in outputs else None)
+                if rgb_key is None:
+                    raise RuntimeError(f"external renderer 返回缺少 rgb，keys={list(outputs.keys())}")
+                out_rgb = outputs[rgb_key]
+                if hasattr(out_rgb, 'permute'):
+                    rgb = out_rgb.permute(1, 2, 0).detach().cpu().numpy()
+                else:
+                    rgb = np.asarray(out_rgb)
                 rgb = np.clip(rgb, 0.0, 1.0)
                 rgb = (rgb * 255.0).astype(np.uint8)
                 depth = None
@@ -172,10 +187,13 @@ class Stereo3DGSRenderer:
             return img
         pts = cache['xyz']  # world
         rgb = cache['rgb']
-        # transform to camera
-        R = T_wc_backend[:3, :3]
-        t = T_wc_backend[:3, 3]
-        Pc = (pts @ R.T) + t[None, :]
+        # 将相机到世界 (c2w) 转为世界到相机 (w2c)
+        R_c2w = T_wc_backend[:3, :3]
+        t_c2w = T_wc_backend[:3, 3]
+        R_w2c = R_c2w.T
+        t_w2c = -R_w2c @ t_c2w
+        # transform world -> camera
+        Pc = (pts @ R_w2c.T) + t_w2c[None, :]
         Z = Pc[:, 2]
         valid = Z > 1e-4
         if not np.any(valid):
