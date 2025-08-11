@@ -30,8 +30,8 @@ control:
 renderer:
   model: assets/3dgs/scene.ply
   backend_coords: opencv
-  backend: external   # 可选: auto/gsplat/external
-  external_path: /home/dell/twinmanip/simulation  # 若使用 external 后端，设置此路径以加载 gs_viewer_utils
+  backend: mygs       # 可选: auto/gsplat/mygs
+  external_path: /home/dell/twinmanip/simulation  # 仅当 backend=external 时启用
 circle:
   center_xy: [0.0, 0.0]
   radius: 1.5

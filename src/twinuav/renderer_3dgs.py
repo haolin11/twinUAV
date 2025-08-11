@@ -9,10 +9,11 @@ class Stereo3DGSRenderer:
     def __init__(self, gs_model_path: str, backend_coords: str = 'opencv', backend: str | None = None, external_path: Optional[str] = None):
         """
         backend 可选:
-          - None/auto: 首选 gsplat 内置加载；失败回退 external；再回退 simple-PLY（CPU）；最后黑图
+          - None/auto: 首选 gsplat 内置加载；失败回退 mygs/external；再回退 simple-PLY（CPU）；最后黑图
           - 'gsplat': 使用 gsplat.GaussianModel.load
-          - 'external': 尝试导入 twinmanip_me 风格的 gs_viewer_utils/fast_gaussian_model_manager
-        external_path: 若不为空，将加入 sys.path 以便导入 external 渲染器依赖
+          - 'mygs': 使用本项目内置的 mygs 后端（复制自 external 接口，避免依赖外部路径）
+          - 'external': 尝试导入外部路径中的 gs_viewer_utils/fast_gaussian_model_manager
+        external_path: 若不为空，将加入 sys.path 以便导入 external 渲染器依赖（仅 backend=external 有效）
         """
         self.model_path = gs_model_path
         self.ready = False
@@ -73,6 +74,69 @@ class Stereo3DGSRenderer:
                     'background': background,
                 }
                 self.backend = 'external'
+                self.ready = True
+            except Exception as e:
+                self._last_error = e
+                self.ready = False
+        # try mygs via external_path (for bitwise same behavior as external)
+        if not self.ready and prefer in ('auto', 'mygs'):
+            try:
+                if external_path and os.path.isdir(external_path):
+                    if external_path not in sys.path:
+                        sys.path.insert(0, external_path)
+                from gs_viewer_utils import GSPlatRenderer as ExtGSPlatRenderer  # type: ignore
+                from gs_viewer_utils import Cameras as ExtCameras  # type: ignore
+                from fast_gaussian_model_manager import construct_from_ply as ext_construct_from_ply  # type: ignore
+                import torch  # type: ignore
+                self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+                gaussian = ext_construct_from_ply(self.model_path, device=torch.device(self.device))
+                if not hasattr(gaussian, 'active_sh_degree') and hasattr(gaussian, 'sh_degrees'):
+                    try:
+                        setattr(gaussian, 'active_sh_degree', int(getattr(gaussian, 'sh_degrees')))
+                    except Exception:
+                        setattr(gaussian, 'active_sh_degree', 3)
+                renderer = ExtGSPlatRenderer()
+                background = torch.tensor((1.0, 1.0, 1.0), dtype=torch.float32, device=self.device)
+                self._ext_handles = {
+                    'renderer': renderer,
+                    'gaussian': gaussian,
+                    'Cameras': ExtCameras,
+                    'torch': torch,
+                    'background': background,
+                }
+                self.backend = 'mygs'
+                self.ready = True
+            except Exception as e:
+                self._last_error = e
+                self.ready = False
+        # try mygs (local copy) viewer utils
+        if not self.ready and prefer in ('auto', 'mygs'):
+            try:
+                try:
+                    from .mygs import GSPlatRenderer, Cameras  # type: ignore
+                    from .mygs import construct_from_ply  # type: ignore
+                except Exception:
+                    # 当本文件以顶层脚本方式导入时（非包导入），回退为绝对包名导入
+                    from twinuav.mygs import GSPlatRenderer, Cameras  # type: ignore
+                    from twinuav.mygs import construct_from_ply  # type: ignore
+                import torch  # type: ignore
+                self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+                gaussian = construct_from_ply(self.model_path, device=torch.device(self.device))
+                if not hasattr(gaussian, 'active_sh_degree') and hasattr(gaussian, 'sh_degrees'):
+                    try:
+                        setattr(gaussian, 'active_sh_degree', int(getattr(gaussian, 'sh_degrees')))
+                    except Exception:
+                        setattr(gaussian, 'active_sh_degree', 3)
+                renderer = GSPlatRenderer()
+                background = torch.tensor((1.0, 1.0, 1.0), dtype=torch.float32, device=self.device)
+                self._ext_handles = {
+                    'renderer': renderer,
+                    'gaussian': gaussian,
+                    'Cameras': Cameras,
+                    'torch': torch,
+                    'background': background,
+                }
+                self.backend = 'mygs'
                 self.ready = True
             except Exception as e:
                 self._last_error = e
@@ -243,7 +307,7 @@ class Stereo3DGSRenderer:
         T_wc = self._invert_cam_world(R_cam_world.astype(np.float32), t_cam_world.astype(np.float32))
         T_wc_backend = self._maybe_to_opengl(T_wc)
         # external backend
-        if self.backend == 'external' and self._ext_handles:
+        if self.backend in ('external', 'mygs') and self._ext_handles:
             rgb, depth = self._render_external(K, T_wc_backend, (W, H), need_depth=return_depth)
             return (rgb, depth) if return_depth else rgb
         # gsplat model
