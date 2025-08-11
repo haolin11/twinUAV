@@ -1,0 +1,15 @@
+ros:
+  rate_cam: 30
+  rate_imu: 150
+  topics:
+    cam0_img: /cam0/image_raw
+    cam1_img: /cam1/image_raw
+    cam0_info: /cam0/camera_info
+    cam1_info: /cam1/camera_info
+    imu: /imu0
+    vins_odom: /vins_estimator/odometry
+calib:
+  cam0: cam_calib/d435i_cam0.yaml
+  cam1: cam_calib/d435i_cam1.yaml
+  T_body_cam0: [1,0,0,0, 0,1,0,0, 0,0,1,0]   # 3x4 row-major (body->cam0) 默认 I
+  T_cam0_cam1: auto  # 若为 'auto' 则由 CameraInfo.P 推导 baseline

@@ -1,0 +1,11 @@
+voxel:
+  ply: assets/3dgs/room_gaussians.ply
+  resolution: 0.05          # m/voxel
+  inflate_radius: 0.10      # m, 膨胀半径
+  bounds: [-3,-3,0, 3,3,2]  # xmin,ymin,zmin,xmax,ymax,zmax
+plan3d:
+  start:  [-2.0, -1.0, 0.8, 0.0]  # x,y,z,yaw
+  goal:   [ 2.4,  0.6, 0.8]       # x,y,z
+  step_xyz: 0.15
+  step_yaw: 0.35
+  n_heading: 16

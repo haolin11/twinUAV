@@ -1,0 +1,8 @@
+__pycache__
+*.pyc
+.env
+.venv
+/outputs/
+/assets/3dgs/*
+/assets/urdf/*
+!.gitkeep

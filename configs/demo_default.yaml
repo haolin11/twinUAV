@@ -1,0 +1,47 @@
+urdf: builtin:genesis_quadrotor
+base_link: base_link
+viewer: false
+steps: 2400
+step_dt: 0.0041667  # 1/240
+stereo:
+  baseline: 0.050
+  res: [848, 480]
+  fov_v_deg: 58.0
+  cam0_yaml: cam_calib/d435i_cam0.yaml
+  cam1_yaml: cam_calib/d435i_cam1.yaml
+objects:
+  table:
+    pos: [1.5, 0.0, 0.75]
+    size: [0.8, 0.6, 0.75]
+voxel:
+  ply: assets/3dgs/room_gaussians.ply
+  resolution: 0.05
+  inflate_radius: 0.10
+  bounds: [-3,-3,0, 3,3,2]
+plan3d:
+  start:  [-2.0, -1.0, 0.8, 0.0]
+  goal:   [ 2.4,  0.6, 0.8]
+  step_xyz: 0.15
+  step_yaw: 0.35
+  n_heading: 16
+control:
+  v_max: 1.2
+  yaw_rate_max: 1.0
+renderer:
+  model: assets/3dgs/scene.ply
+  backend_coords: opencv
+  backend: external   # 可选: auto/gsplat/external
+  external_path: twinmanip_me/simulation  # 若使用 external 后端，设置此路径以加载 gs_viewer_utils
+circle:
+  center_xy: [0.0, 0.0]
+  radius: 1.5
+  z: 0.8
+  omega: 0.35
+  duration: 20.0
+capture:
+  near_object: table
+  radius: 0.7
+  burst: 5
+output:
+  dir: outputs
+  save_npz: true

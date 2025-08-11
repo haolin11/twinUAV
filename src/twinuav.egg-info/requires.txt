@@ -1,0 +1,9 @@
+numpy
+pyyaml
+plyfile
+
+[render]
+torch
+
+[test]
+pytest
