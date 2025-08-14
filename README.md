@@ -37,8 +37,9 @@ pip install -r requirements.txt
 # 1) 创建隔离环境并安装最小依赖
 mamba create -n twinuav python=3.10 -y
 pip install torch==2.4.0 torchvision==0.19.0 --index-url https://download.pytorch.org/whl/cu118
-pip install genesis-world==0.2.1 mujoco transformers==4.51.3 gdown setuptools==59.5 libigl==2.5.1 pyglet
-pip install gsplat==0.1.11
+pip install genesis-world==0.2.1 mujoco transformers==4.51.3 gdown setuptools==59.5 libigl==2.5.1 pyglet gsplat==0.1.11 open3d
+
+
 
 export PATH=/usr/local/cuda-11.8/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda-11.8/lib64:$LD_LIBRARY_PATH
@@ -66,3 +67,5 @@ ROS_NAMESPACE=/ mamba run -n twinuav python -m twinuav.ros1_playback \
 nv -u LD_LIBRARY_PATH LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia PYOPENGL_PLATFORM=glx /home/dell/.local/share/mamba/envs/twinuav/bin/python /home/dell/twinUAV/src/twinuav/run_circle.py --config /home/dell/twinUAV/configs/demo_default.yaml | cat
 
 __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia python /home/dell/twinUAV/src/twinuav/run_circle.py --config /home/dell/twinUAV/configs/demo_default.yaml
+
+python src/twinuav/run_circle.py --config /data/home/chenhaolin/twinUAV/configs/demo_default.yaml

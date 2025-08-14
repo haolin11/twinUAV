@@ -1,6 +1,6 @@
 urdf: builtin:genesis_quadrotor
 base_link: base_link
-viewer: true
+viewer: false
 steps: 2400
 step_dt: 0.0041667  # 1/240
 stereo:
@@ -28,7 +28,7 @@ control:
   v_max: 1.2
   yaw_rate_max: 1.0
 renderer:
-  model: assets/3dgs/scene.ply
+  model: assets/3dgs/scene_rot.ply
   backend_coords: opencv
   backend: mygs       # 可选: auto/gsplat/mygs
   external_path: /home/dell/twinmanip/simulation  # 仅当 backend=external 时启用
